@@ -23,6 +23,27 @@ printable hand‑off report — in under 30 seconds.
 
 ---
 
+## 📋 Table of Contents
+
+- [✨ Features](#-features)
+- [🧱 Tech Stack](#-tech-stack)
+- [📁 Project Structure](#-project-structure)
+- [🚀 Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [Running the Application](#running-the-application)
+- [📜 Scripts](#-scripts)
+- [🔌 API Reference](#-api-reference)
+- [🧠 How Triage Works](#-how-triage-works)
+- [🗺️ Maps & Geocoding](#️-maps--geocoding)
+- [🛡️ Security Note](#️-security-note)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+- [👨‍💻 Author](#-author)
+
+---
+
 ## ✨ Features
 
 | | Feature | Description |
@@ -46,7 +67,7 @@ a rule‑based triage engine and OpenStreetMap.
 **Frontend**
 - React 18 + TypeScript + [Vite](https://vitejs.dev/)
 - Tailwind CSS + Framer Motion (animations)
-- React Router, Zustand (state)
+- React Router, Zustand (state management)
 - Leaflet / React‑Leaflet + marker clustering (maps)
 
 **Backend**
@@ -83,7 +104,11 @@ RescueAI/
     │   ├── App.tsx              # routes & layout
     │   ├── pages/               # Landing, Triage, Results, Hospitals, FirstAid, Report
     │   ├── components/          # layout + common UI
-    │   ├── hooks/  store/  services/  utils/  styles/
+    │   ├── hooks/               # custom React hooks
+    │   ├── store/               # Zustand state stores
+    │   ├── services/            # API service layer
+    │   ├── utils/               # helper functions
+    │   ├── styles/              # global styles
     │   └── main.tsx
     └── package.json
 ```
@@ -99,80 +124,130 @@ RescueAI/
 - *(optional)* Google **Gemini** API key for AI triage
 - *(optional)* Google **Maps Platform** key for Google‑powered maps
 
-### 1. Clone & install
+### Installation
+
+#### 1. Clone the repository
 
 ```bash
 git clone <your-repo-url> RescueAI
 cd RescueAI
+```
 
-# Backend
+#### 2. Install backend dependencies
+
+```bash
 cd backend
 npm install
+```
 
-# Frontend
+#### 3. Install frontend dependencies
+
+```bash
 cd ../frontend
 npm install
 ```
 
-### 2. Configure environment
+### Configuration
 
-Copy the example env files and fill in values (all secrets are optional):
+#### Backend Configuration
+
+Copy the example env file and fill in values:
 
 ```bash
-# from the backend/ folder
-cp .env.example .env
-
-# from the frontend/ folder
+cd backend
 cp .env.example .env
 ```
 
-**`backend/.env`**
+Edit `backend/.env`:
 
-| Variable | Default | Description |
-|---|---|---|
-| `NODE_ENV` | `development` | Runtime environment |
-| `PORT` | `4000` | API port |
-| `HOST` | `127.0.0.1` | API host |
-| `CLIENT_ORIGIN` | `http://localhost:5180` | Allowed CORS origin (the frontend) |
-| `MONGODB_URI` | `mongodb://127.0.0.1:27017/rescueai` | MongoDB connection string |
-| `GEMINI_API_KEY` | *(empty)* | Google Gemini key — **empty = rule‑based fallback** |
-| `GEMINI_MODEL` | `gemini-flash-latest` | Gemini model name |
-| `GOOGLE_MAPS_API_KEY` | *(empty)* | Server‑side Maps key — **empty = OpenStreetMap** |
-| `RATE_LIMIT_WINDOW_MS` | `900000` | Rate‑limit window (15 min) |
-| `RATE_LIMIT_MAX` | `100` | Max requests per window |
-| `LOG_LEVEL` | `info` | Winston log level |
+```env
+# Server
+NODE_ENV=development
+PORT=4000
+HOST=127.0.0.1
+CLIENT_ORIGIN=http://localhost:5180
 
-**`frontend/.env`**
+# Database
+MONGODB_URI=mongodb://127.0.0.1:27017/rescueai
 
-| Variable | Default | Description |
-|---|---|---|
-| `VITE_API_BASE_URL` | `/api/v1` | API base (proxied to the backend in dev) |
-| `VITE_GOOGLE_MAPS_API_KEY` | *(empty)* | Browser Maps key — empty = OpenStreetMap |
+# AI (Optional - leave empty for rule-based fallback)
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-flash-latest
 
-### 3. Run in development
+# Maps (Optional - leave empty for OpenStreetMap)
+GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX=100
+
+# Logging
+LOG_LEVEL=info
+```
+
+#### Frontend Configuration
 
 ```bash
-# Terminal 1 — API (http://127.0.0.1:4000)
+cd frontend
+cp .env.example .env
+```
+
+Edit `frontend/.env`:
+
+```env
+# API
+VITE_API_BASE_URL=/api/v1
+
+# Maps (Optional - leave empty for OpenStreetMap)
+VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+```
+
+### Running the Application
+
+#### Development Mode
+
+**Terminal 1 - Backend API:**
+```bash
 cd backend
 npm run dev
+```
+The API will run at `http://127.0.0.1:4000`
 
-# Terminal 2 — Web app (http://localhost:5180)
+**Terminal 2 - Frontend:**
+```bash
 cd frontend
 npm run dev
 ```
+The web app will run at `http://localhost:5180`
 
 The Vite dev server proxies `/api` and `/health` to the backend on port `4000`,
 so there are no CORS issues in development. On start, the backend connects to
 MongoDB and seeds hospital data automatically.
 
+#### Production Build
+
+**Backend:**
+```bash
+cd backend
+npm run build
+npm start
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm run build
+npm run preview
+```
+
 ---
 
 ## 📜 Scripts
 
-**Backend** (`backend/`)
+### Backend (`backend/`)
 
 | Command | Description |
-|---|---|
+|---------|-------------|
 | `npm run dev` | Start API with hot reload (`tsx watch`) |
 | `npm start` | Start API without watch |
 | `npm run build` | Compile TypeScript to `dist/` |
@@ -181,10 +256,10 @@ MongoDB and seeds hospital data automatically.
 | `npm test` | Run Jest tests |
 | `npm run typecheck` | Type‑check without emitting |
 
-**Frontend** (`frontend/`)
+### Frontend (`frontend/`)
 
 | Command | Description |
-|---|---|
+|---------|-------------|
 | `npm run dev` | Start Vite dev server (port 5180) |
 | `npm run build` | Type‑check and build for production |
 | `npm run preview` | Preview the production build |
@@ -196,37 +271,42 @@ MongoDB and seeds hospital data automatically.
 
 Base URL: `http://127.0.0.1:4000` · API prefix: `/api/v1`
 
-### Triage
+### Triage Endpoints
+
 | Method | Endpoint | Description |
-|---|---|---|
+|--------|----------|-------------|
 | `POST` | `/api/v1/triage/questions` | Get adaptive follow‑up questions for a symptom description |
 | `POST` | `/api/v1/triage/analyze` | Analyse symptoms (+ optional image & answers) and return an assessment |
 | `GET`  | `/api/v1/triage/:sessionId` | Fetch a stored triage session |
 
-### Hospitals
+### Hospital Endpoints
+
 | Method | Endpoint | Description |
-|---|---|---|
+|--------|----------|-------------|
 | `GET` | `/api/v1/hospitals/nearby?lat=&lng=&radiusKm=&ownership=&service=` | Nearby hospitals sorted by distance/ETA |
 | `GET` | `/api/v1/hospitals/first-aid` | First‑aid knowledge base |
 
-### Geo
+### Geo Endpoints
+
 | Method | Endpoint | Description |
-|---|---|---|
+|--------|----------|-------------|
 | `GET` | `/api/v1/geo/reverse?lat=&lng=` | Reverse geocode coordinates to an address |
 | `GET` | `/api/v1/geo/search?q=` | Forward geocode / place search |
 | `GET` | `/api/v1/geo/autocomplete?input=` | Place autocomplete suggestions |
 | `GET` | `/api/v1/geo/directions?originLat=&originLng=&destLat=&destLng=` | Route directions |
 | `GET` | `/api/v1/geo/distance-matrix?originLat=&originLng=&destinations=lat,lng;lat,lng` | Distance/ETA matrix |
 
-### Reports
+### Report Endpoints
+
 | Method | Endpoint | Description |
-|---|---|---|
+|--------|----------|-------------|
 | `POST` | `/api/v1/reports` | Create a printable emergency report |
 | `GET`  | `/api/v1/reports/:reportId` | Fetch a stored report |
 
-### System
+### System Endpoints
+
 | Method | Endpoint | Description |
-|---|---|---|
+|--------|----------|-------------|
 | `GET` | `/health` | Health check |
 | `GET` | `/api/v1` | API index / endpoint listing |
 
@@ -244,9 +324,36 @@ Base URL: `http://127.0.0.1:4000` · API prefix: `/api/v1`
 5. **Act** — the result includes recommended care, guided first aid, medicine
    suggestions, whether an ambulance/hospital is required, and nearby hospitals.
 
+### Severity Levels
+
+| Level | Score Range | Action |
+|-------|-------------|--------|
+| 🚨 **Emergency** | 80-100 | Call emergency services immediately |
+| ⚠️ **Urgent** | 60-79 | Seek medical attention within 1-2 hours |
+| ℹ️ **Moderate** | 30-59 | See a doctor within 24 hours |
+| ✅ **Low** | 0-29 | Self-care at home, monitor symptoms |
+
 ---
 
-## 🔒 Security Note
+## 🗺️ Maps & Geocoding
+
+RescueAI supports two map providers:
+
+### Google Maps Platform (Preferred)
+- Requires API key in both frontend and backend
+- Provides: Places Autocomplete, Directions, Distance Matrix, Street View
+- Set `GOOGLE_MAPS_API_KEY` in both `.env` files
+
+### OpenStreetMap (Fallback - No Key Required)
+- Uses Nominatim for geocoding
+- Uses Overpass API for POI (Point of Interest) searches
+- Uses OSRM (Open Source Routing Machine) for directions
+- Fully functional without any API keys
+- Rate limited by OSM policies (1 request per second)
+
+---
+
+## 🛡️ Security Note
 
 The committed `.env.example` files currently contain **real‑looking API keys** for
 Gemini and Google Maps. Before publishing this repository you should:
@@ -257,14 +364,85 @@ Gemini and Google Maps. Before publishing this repository you should:
 
 Never commit live credentials to version control.
 
+### Security Best Practices
+
+- Always use environment variables for sensitive data
+- Implement rate limiting to prevent abuse
+- Use Helmet.js for secure HTTP headers
+- Validate all user inputs with Joi
+- Sanitize user inputs before processing
+- Log security events for monitoring
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how you can help:
+
+1. **Fork the repository**
+2. **Create a feature branch:** `git checkout -b feature/amazing-feature`
+3. **Commit your changes:** `git commit -m 'Add amazing feature'`
+4. **Push to the branch:** `git push origin feature/amazing-feature`
+5. **Open a Pull Request**
+
+### Development Guidelines
+
+- Write TypeScript with strict type checking
+- Follow the existing code style (Prettier + ESLint)
+- Write unit tests for new features
+- Update documentation for API changes
+- Test both with and without API keys
+
 ---
 
 ## 📄 License
 
-Released under the **MIT License**.
+This project is licensed under the **MIT License**.
+
+Copyright © 2026 **Rakesh Sivala**
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## 👨‍💻 Author
+
+**Rakesh Sivala**
+
+- GitHub: [@rakeshsivala](https://github.com/rakeshsivala)
+- LinkedIn: [Rakesh Sivala](https://linkedin.com/in/rakeshsivala)
+
+---
+
+## 🙏 Acknowledgments
+
+- [Google Gemini](https://deepmind.google/technologies/gemini/) for AI capabilities
+- [OpenStreetMap](https://www.openstreetmap.org/) for free map data
+- [React](https://reactjs.org/) and [Vite](https://vitejs.dev/) communities
+- All contributors who help make RescueAI better
 
 ---
 
 <div align="center">
-Built with ❤️ to help people get the right care, faster.
+
+### Built with ❤️ by Rakesh Sivala to help people get the right care, faster.
+
+**⭐ Star this repository if you found it useful!**
+
 </div>
