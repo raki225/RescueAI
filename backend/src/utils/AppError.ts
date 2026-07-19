@@ -1,0 +1,36 @@
+/**
+ * Operational error with an HTTP status code.
+ * Distinguishes expected/handled errors from unexpected programmer errors.
+ */
+export class AppError extends Error {
+  public readonly statusCode: number;
+  public readonly isOperational: boolean;
+  public readonly details?: unknown;
+
+  constructor(message: string, statusCode = 500, details?: unknown) {
+    super(message);
+    this.statusCode = statusCode;
+    this.isOperational = true;
+    this.details = details;
+    Object.setPrototypeOf(this, AppError.prototype);
+    Error.captureStackTrace(this, this.constructor);
+  }
+
+  static badRequest(message: string, details?: unknown): AppError {
+    return new AppError(message, 400, details);
+  }
+
+  static notFound(message = 'Resource not found'): AppError {
+    return new AppError(message, 404);
+  }
+
+  static tooMany(message = 'Too many requests'): AppError {
+    return new AppError(message, 429);
+  }
+
+  static internal(message = 'Internal server error', details?: unknown): AppError {
+    return new AppError(message, 500, details);
+  }
+}
+
+export default AppError;
